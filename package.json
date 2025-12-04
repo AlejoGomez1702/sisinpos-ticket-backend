@@ -1,8 +1,10 @@
 {
   "name": "sisinpos-ticket-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,8 +13,13 @@
   "description": "",
   "dependencies": {
     "@point-of-sale/receipt-printer-encoder": "^3.0.3",
+    "@point-of-sale/system-receipt-printer": "^2.0.1",
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
   }
 }
