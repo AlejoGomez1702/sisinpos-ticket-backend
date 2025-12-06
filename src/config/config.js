@@ -1,6 +1,4 @@
-/**
- * Configuración centralizada de la aplicación
- */
+require('dotenv').config({ quiet: true });
 
 module.exports = {
   port: process.env.PORT || 3000,
