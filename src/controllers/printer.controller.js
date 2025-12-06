@@ -25,7 +25,7 @@ const printTicket = async( req = request, res = response ) => {
         });
 
         // 4. Generar datos del ticket
-        const data = encoder
+        let ticketEncoder = encoder
             .initialize()
             .codepage('auto')
 
@@ -42,11 +42,18 @@ const printTicket = async( req = request, res = response ) => {
             .bold(false)
 
             // Info Obligatoria del negocio
-            .line('NIT: xxx.xxx.xxx-x')
+            .line(`NIT: ${establishment.nit}`)
 
             // Información adicional Recomendada
-            .line('CEL/WhatsApp: 310-636-6850')
-            .line('Cali, Valle del Cauca')
+            .line(`CEL/WhatsApp: ${establishment.phone}`);
+        
+            // Solo agregar email si existe
+            if (establishment.email) {
+                ticketEncoder = ticketEncoder.line(`Email: ${establishment.email}`);
+            }
+            
+            ticketEncoder = ticketEncoder
+            .line(establishment.address)
             .newline()
 
             // Detalles del ticket
@@ -100,6 +107,8 @@ const printTicket = async( req = request, res = response ) => {
             // .line('Desarrollador: sisinpos.com')
             .cut()
             .encode();
+
+        const data = ticketEncoder;
 
         console.log(`📄 Datos generados: ${data.length} bytes`);
 
