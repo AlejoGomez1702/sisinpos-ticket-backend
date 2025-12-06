@@ -3,6 +3,7 @@ const SystemReceiptPrinter = require('@point-of-sale/system-receipt-printer');
 
 const validatePrinter = async (req = request, res = response, next) => {
     try {
+        req.ticket = {};
         // Obtener lista de impresoras disponibles
         const printers = SystemReceiptPrinter.getPrinters();
         
@@ -22,7 +23,7 @@ const validatePrinter = async (req = request, res = response, next) => {
         }
         
         // Guardar la impresora en el request para usarla en el controlador
-        req.printer = sisinposPrinter;
+        req.ticket.printer = sisinposPrinter;
         console.log(`✓ Impresora "Sisinpos" encontrada y lista`);
         
         next();

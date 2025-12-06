@@ -6,9 +6,10 @@ const path = require('path');
 
 const printTicket = async( req = request, res = response ) => {
 
+    const { printer, establishment } = req.ticket;
+
     try {
         // 1. Obtener impresora 
-        const printer = req.printer;
         const receiptPrinter = new SystemReceiptPrinter({ name: printer.name });
 
         const imagePath = path.join(__dirname, '..', '..', 'assets', 'images', 'sultan-icon.png');
@@ -30,67 +31,73 @@ const printTicket = async( req = request, res = response ) => {
 
             // Imagen
             .align('center')
-            .image(image, imageWidth, imageHeight)
+            // .image(image, imageWidth, imageHeight)
 
             // Información del negocio
             .font('A')
             .bold(true)
-            .line('Tequilazo')
+            .size(2, 2)
+            .line(establishment.name)
+            .size(1, 1)
             .bold(false)
-            
+
+            // Info Obligatoria del negocio
             .line('NIT: xxx.xxx.xxx-x')
-            .line('CELULAR: 3106366850')
-            .line('CORREO: herrerarinconjorgemiguel@gmail.com')
-            .line('DIRECCIÓN: Cali, Valle del Cauca')
+
+            // Información adicional Recomendada
+            .line('CEL/WhatsApp: 310-636-6850')
+            .line('Cali, Valle del Cauca')
             .newline()
-            .table(
-                [
-                    { width: 18, align: 'left' },
-                    { width: 4,  align: 'left' },
-                    { width: 10,  align: 'right' },
-                    { width: 10,  align: 'right' }
-                ],
-                [
-                    [
-                        (encoder) => encoder.bold(true).text('Producto').bold(false),
-                        (encoder) => encoder.bold(true).text('CT').bold(false),
-                        (encoder) => encoder.bold(true).text('Unit').bold(false),
-                        (encoder) => encoder.bold(true).text('Total').bold(false)
-                    ],
-                    [
-                        (encoder) => encoder.rule({ style: 'double' }),
-                        (encoder) => encoder.rule({ style: 'double' }),
-                        (encoder) => encoder.rule({ style: 'double' }),
-                        (encoder) => encoder.rule({ style: 'double' })
-                    ],
-                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('left'), 'x2', '$20.000','$40.000' ],
-                    [
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule()
-                    ],
-                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x1', '$18.000','$18.000' ],
-                    [
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule()
-                    ],
-                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x3', '$44.000','$132.000' ]
-                ]
-            )
-            .newline()
-            .size(1,2)
-            .align('center')
-            .line('Luis Alejandro Gómez Castaño')
-            .line('12/10/2024 01:44 PM')
-            .size(2,2)
-            .line('¡Gracias x su Compra!')
-            .barcode('3130ds3', 'code128')
-            .qrcode('https://nielsleenheer.com')
-            .size(1,2)
-            .line('Desarrollador: sisinpos.com')
+
+            // Detalles del ticket
+            // .table(
+            //     [
+            //         { width: 18, align: 'left' },
+            //         { width: 4,  align: 'left' },
+            //         { width: 10,  align: 'right' },
+            //         { width: 10,  align: 'right' }
+            //     ],
+            //     [
+            //         [
+            //             (encoder) => encoder.bold(true).text('Producto').bold(false),
+            //             (encoder) => encoder.bold(true).text('CT').bold(false),
+            //             (encoder) => encoder.bold(true).text('Unit').bold(false),
+            //             (encoder) => encoder.bold(true).text('Total').bold(false)
+            //         ],
+            //         [
+            //             (encoder) => encoder.rule({ style: 'double' }),
+            //             (encoder) => encoder.rule({ style: 'double' }),
+            //             (encoder) => encoder.rule({ style: 'double' }),
+            //             (encoder) => encoder.rule({ style: 'double' })
+            //         ],
+            //         [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('left'), 'x2', '$20.000','$40.000' ],
+            //         [
+            //             (encoder) => encoder.rule(),
+            //             (encoder) => encoder.rule(),
+            //             (encoder) => encoder.rule(),
+            //             (encoder) => encoder.rule()
+            //         ],
+            //         [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x1', '$18.000','$18.000' ],
+            //         [
+            //             (encoder) => encoder.rule(),
+            //             (encoder) => encoder.rule(),
+            //             (encoder) => encoder.rule(),
+            //             (encoder) => encoder.rule()
+            //         ],
+            //         [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x3', '$44.000','$132.000' ]
+            //     ]
+            // )
+            // .newline()
+            // .size(1,2)
+            // .align('center')
+            // .line('Luis Alejandro Gómez Castaño')
+            // .line('12/10/2024 01:44 PM')
+            // .size(2,2)
+            // .line('¡Gracias x su Compra!')
+            // .barcode('3130ds3', 'code128')
+            // .qrcode('https://nielsleenheer.com')
+            // .size(1,2)
+            // .line('Desarrollador: sisinpos.com')
             .cut()
             .encode();
 
