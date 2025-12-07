@@ -15,6 +15,7 @@ router.post('/print-ticket', [
   check('establishment_phone').optional().trim().isString().isLength({ max: 15 }),
   check('establishment_email').optional().trim().isEmail().withMessage('El email no es válido'),
   check('establishment_address').optional().trim().isString().isLength({ max: 60 }),
+  check('waiter_name').trim().isString().not().isEmpty().isLength({ max: 50 }),
   validateFields,
   validateTicketData
 ], printTicket);

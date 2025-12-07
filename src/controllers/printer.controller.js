@@ -9,7 +9,6 @@ const printTicket = async( req = request, res = response ) => {
     const { printer, establishment } = req.ticket;
 
     try {
-        // 1. Obtener impresora 
         const receiptPrinter = new SystemReceiptPrinter({ name: printer.name });
 
         const imagePath = path.join(__dirname, '..', '..', 'assets', 'images', 'sultan-icon.png');
@@ -24,77 +23,78 @@ const printTicket = async( req = request, res = response ) => {
             createCanvas: createCanvas
         });
 
-        // 4. Generar datos del ticket
         let ticketEncoder = encoder
             .initialize()
             .codepage('auto')
 
-            // Imagen
+            // [1] Imagen
             .align('center')
             // .image(image, imageWidth, imageHeight)
 
-            // Información del negocio
+            // [2] Información del negocio
             .font('A')
             .bold(true)
             .size(2, 2)
             .line(establishment.name)
             .size(1, 1)
             .bold(false)
-
             // Info Obligatoria del negocio
             .line(`NIT: ${establishment.nit}`)
-
             // Información adicional Recomendada
-            .line(`CEL/WhatsApp: ${establishment.phone}`);
-        
+            .line(`CEL/WhatsApp: ${establishment.phone}`);        
             // Solo agregar email si existe
             if (establishment.email) {
-                ticketEncoder = ticketEncoder.line(`Email: ${establishment.email}`);
-            }
-            
+                ticketEncoder = ticketEncoder.line(establishment.email);
+            }            
             ticketEncoder = ticketEncoder
             .line(establishment.address)
+            .align('left')
+            .rule()
+
+            // [3] Fecha y Usuario
+            .line(`${req.ticket.metadata.date} - ${req.ticket.metadata.time}`)
+            .line(`Atendido por: ${req.ticket.metadata.waiter}`)
             .newline()
 
-            // Detalles del ticket
-            // .table(
-            //     [
-            //         { width: 18, align: 'left' },
-            //         { width: 4,  align: 'left' },
-            //         { width: 10,  align: 'right' },
-            //         { width: 10,  align: 'right' }
-            //     ],
-            //     [
-            //         [
-            //             (encoder) => encoder.bold(true).text('Producto').bold(false),
-            //             (encoder) => encoder.bold(true).text('CT').bold(false),
-            //             (encoder) => encoder.bold(true).text('Unit').bold(false),
-            //             (encoder) => encoder.bold(true).text('Total').bold(false)
-            //         ],
-            //         [
-            //             (encoder) => encoder.rule({ style: 'double' }),
-            //             (encoder) => encoder.rule({ style: 'double' }),
-            //             (encoder) => encoder.rule({ style: 'double' }),
-            //             (encoder) => encoder.rule({ style: 'double' })
-            //         ],
-            //         [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('left'), 'x2', '$20.000','$40.000' ],
-            //         [
-            //             (encoder) => encoder.rule(),
-            //             (encoder) => encoder.rule(),
-            //             (encoder) => encoder.rule(),
-            //             (encoder) => encoder.rule()
-            //         ],
-            //         [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x1', '$18.000','$18.000' ],
-            //         [
-            //             (encoder) => encoder.rule(),
-            //             (encoder) => encoder.rule(),
-            //             (encoder) => encoder.rule(),
-            //             (encoder) => encoder.rule()
-            //         ],
-            //         [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x3', '$44.000','$132.000' ]
-            //     ]
-            // )
-            // .newline()
+            // [4] Listado de productos
+            .table(
+                [
+                    { width: 18, align: 'left' },
+                    { width: 4,  align: 'left' },
+                    { width: 10,  align: 'right' },
+                    { width: 10,  align: 'right' }
+                ],
+                [
+                    [
+                        (encoder) => encoder.bold(true).text('Producto').bold(false),
+                        (encoder) => encoder.bold(true).text('CT').bold(false),
+                        (encoder) => encoder.bold(true).text('Unit').bold(false),
+                        (encoder) => encoder.bold(true).text('Total').bold(false)
+                    ],
+                    [
+                        (encoder) => encoder.rule({ style: 'double' }),
+                        (encoder) => encoder.rule({ style: 'double' }),
+                        (encoder) => encoder.rule({ style: 'double' }),
+                        (encoder) => encoder.rule({ style: 'double' })
+                    ],
+                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('left'), 'x2', '$20.000','$40.000' ],
+                    [
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule()
+                    ],
+                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x1', '$18.000','$18.000' ],
+                    [
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule()
+                    ],
+                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x3', '$44.000','$132.000' ]
+                ]
+            )
+            .newline()
             // .size(1,2)
             // .align('center')
             // .line('Luis Alejandro Gómez Castaño')
