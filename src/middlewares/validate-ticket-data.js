@@ -7,9 +7,11 @@ const validateTicketData = ( req, res, next ) => {
         establishment_phone,
         establishment_email,
         establishment_address,
-        waiter_name
+        waiter_name,
+        sale_data
     } = req.body;
 
+    // [1] Información del establecimiento
     req.ticket.establishment = {
         name: establishment_name,
         nit: establishment_nit || 'xxx.xxx.xxx-x',
@@ -18,7 +20,7 @@ const validateTicketData = ( req, res, next ) => {
         address: establishment_address || 'Colombia'
     };
 
-    // Datos del ticket
+    // [2] Metadatos del ticket (fecha, hora, usuario, observaciones)
     const now = new Date();
     const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -26,8 +28,21 @@ const validateTicketData = ( req, res, next ) => {
     req.ticket.metadata = {
         date: date,
         time: time,
-        waiter: waiter_name || null
+        waiter: waiter_name || null,
+        observations: sale_data.notes || null
     };
+
+    // [3] Productos de la venta
+    req.ticket.products = sale_data.products.map(product => ({
+        name: product.product_name,
+        quantity: product.count,
+        unitPrice: product.sale_price,
+        total: product.total_item_value,
+        note: product.product_note || null
+    }));
+
+    // [4] Total de la venta
+    req.ticket.total = sale_data.total;
 
     next();
 };

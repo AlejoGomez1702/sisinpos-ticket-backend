@@ -51,18 +51,23 @@ const printTicket = async( req = request, res = response ) => {
             .align('left')
             .rule()
 
-            // [3] Fecha y Usuario
+            // [3] Fecha, Usuario y observaciones
             .line(`${req.ticket.metadata.date} - ${req.ticket.metadata.time}`)
-            .line(`Atendido por: ${req.ticket.metadata.waiter}`)
+            .line(`Atendido por: ${req.ticket.metadata.waiter}`);
+            if (req.ticket.metadata.observations) {
+                ticketEncoder = ticketEncoder.line(`Observaciones: ${req.ticket.metadata.observations}`);
+            }        
+            ticketEncoder = ticketEncoder
             .newline()
 
             // [4] Listado de productos
+            .align('left')
             .table(
                 [
-                    { width: 18, align: 'left' },
-                    { width: 4,  align: 'left' },
-                    { width: 10,  align: 'right' },
-                    { width: 10,  align: 'right' }
+                    { width: 22, align: 'left' },
+                    { width: 3,  align: 'center' },
+                    { width: 11,  align: 'right' },
+                    { width: 12,  align: 'right' }
                 ],
                 [
                     [
@@ -76,24 +81,43 @@ const printTicket = async( req = request, res = response ) => {
                         (encoder) => encoder.rule({ style: 'double' }),
                         (encoder) => encoder.rule({ style: 'double' }),
                         (encoder) => encoder.rule({ style: 'double' })
-                    ],
-                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('left'), 'x2', '$20.000','$40.000' ],
-                    [
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule()
-                    ],
-                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x1', '$18.000','$18.000' ],
-                    [
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule()
-                    ],
-                    [ (encoder) => encoder.bold(false).text('Media de aguardiente amarillo de manzanares').align('center'), 'x3', '$44.000','$132.000' ]
+                    ]
                 ]
-            )
+            );
+
+        // Renderizar cada producto
+        req.ticket.products.forEach(product => {
+            // Formatear valores
+            const quantity = `x${product.quantity}`;
+            const unitPrice = `$${product.unitPrice.toLocaleString('es-CO')}`;
+            const total = `$${product.total.toLocaleString('es-CO')}`;
+
+            // Tabla con información del producto
+            ticketEncoder = ticketEncoder
+                .table(
+                    [
+                        { width: 22, align: 'left' },
+                        { width: 3,  align: 'center' },
+                        { width: 11,  align: 'right' },
+                        { width: 12,  align: 'right' }
+                    ],
+                    [
+                        [ product.name, quantity, unitPrice, total ]
+                    ]
+                );
+
+            // Solo mostrar nota si existe
+            if (product.note) {
+                ticketEncoder = ticketEncoder
+                    .font('B')
+                    .line(`> ${product.note}`)
+                    .font('A');
+            }
+
+            ticketEncoder = ticketEncoder.newline();
+        });
+
+        ticketEncoder = ticketEncoder
             .newline()
             // .size(1,2)
             // .align('center')

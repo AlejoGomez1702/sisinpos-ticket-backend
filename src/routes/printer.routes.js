@@ -16,6 +16,9 @@ router.post('/print-ticket', [
   check('establishment_email').optional().trim().isEmail().withMessage('El email no es válido'),
   check('establishment_address').optional().trim().isString().isLength({ max: 60 }),
   check('waiter_name').trim().isString().not().isEmpty().isLength({ max: 50 }),
+  check('sale_data', 'Los datos de la venta son obligatorios').exists(),
+  check('sale_data.products', 'La lista de productos es obligatoria').isArray({ min: 1 }),
+  check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),
   validateFields,
   validateTicketData
 ], printTicket);
