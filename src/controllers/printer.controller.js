@@ -117,17 +117,27 @@ const printTicket = async( req = request, res = response ) => {
             ticketEncoder = ticketEncoder.newline();
         });
 
+        // [5] Total de la venta
+        const formattedTotal = `$${req.ticket.total.toLocaleString('es-CO')}`;
+        
         ticketEncoder = ticketEncoder
+            .rule()
+            .align('right')
+            .bold(true)
+            .size(1, 2)
+            .line(`TOTAL: ${formattedTotal}`)
+            .size(1, 1)
+            .bold(false)
             .newline()
-            // .size(1,2)
-            // .align('center')
-            // .line('Luis Alejandro Gómez Castaño')
-            // .line('12/10/2024 01:44 PM')
-            // .size(2,2)
-            // .line('¡Gracias x su Compra!')
+            
+            // [6] Mensaje de agradecimiento
+            .align('center')
+            .size(1, 2)
+            .line('¡Gracias por su compra!')
+            .size(1, 1)
+            .newline()
             // .barcode('3130ds3', 'code128')
-            // .qrcode('https://nielsleenheer.com')
-            // .size(1,2)
+            .qrcode('https://sisinpos.com')
             // .line('Desarrollador: sisinpos.com')
             .cut()
             .encode();
