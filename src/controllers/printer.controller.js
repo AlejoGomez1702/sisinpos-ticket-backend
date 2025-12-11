@@ -51,13 +51,15 @@ const printTicket = async( req = request, res = response ) => {
             .align('left')
             .rule()
 
-            // [3] Fecha, Usuario y observaciones
+            // [3] Fecha, Usuario, Artículos entregados y observaciones
             .line(`${req.ticket.metadata.date} - ${req.ticket.metadata.time}`)
-            .line(`Atendido por: ${req.ticket.metadata.waiter}`);
-            if (req.ticket.metadata.observations) {
-                ticketEncoder = ticketEncoder.line(`Observaciones: ${req.ticket.metadata.observations}`);
-            }        
-            ticketEncoder = ticketEncoder
+            .line(`Atendido por: ${req.ticket.metadata.waiter}`)
+            .line(`Artículos entregados: ${req.ticket.metadata.totalArticles}`);
+        
+        if (req.ticket.metadata.observations) {
+            ticketEncoder = ticketEncoder.line(`Observaciones: ${req.ticket.metadata.observations}`);
+        }        
+        ticketEncoder = ticketEncoder
             .newline()
 
             // [4] Listado de productos
@@ -77,10 +79,10 @@ const printTicket = async( req = request, res = response ) => {
                         (encoder) => encoder.bold(true).text('Total').bold(false)
                     ],
                     [
-                        (encoder) => encoder.rule({ style: 'double' }),
-                        (encoder) => encoder.rule({ style: 'double' }),
-                        (encoder) => encoder.rule({ style: 'double' }),
-                        (encoder) => encoder.rule({ style: 'double' })
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule(),
+                        (encoder) => encoder.rule()
                     ]
                 ]
             );
@@ -124,7 +126,7 @@ const printTicket = async( req = request, res = response ) => {
             .rule()
             .align('right')
             .bold(true)
-            .size(1, 2)
+            .size(2, 2)
             .line(`TOTAL: ${formattedTotal}`)
             .size(1, 1)
             .bold(false)
@@ -137,8 +139,15 @@ const printTicket = async( req = request, res = response ) => {
             .size(1, 1)
             .newline()
             // .barcode('3130ds3', 'code128')
-            .qrcode('https://sisinpos.com')
-            // .line('Desarrollador: sisinpos.com')
+            .qrcode('https://drive.google.com/file/d/1eYZ00-DQhBOzc60ecx4m5XN7uR7IMRY2/view?usp=sharing')
+            .newline()
+            
+            // [7] Crédito del desarrollador
+            .align('center')
+            .font('A')
+            .bold(true)
+            .line('Desarrollado por: sisinpos.com')
+            .bold(false)
             .cut()
             .encode();
 
