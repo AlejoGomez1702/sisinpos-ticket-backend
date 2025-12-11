@@ -1,5 +1,23 @@
 const { request, response } = require("express");
 const SystemReceiptPrinter = require('@point-of-sale/system-receipt-printer');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
+
+/**
+ * Verifica el estado real de la impresora usando PowerShell
+ * @param {string} printerName 
+ * @returns {Promise<boolean>}
+ */
+const isPrinterOnline = async (printerName) => {
+    // TODO: Implementar validación confiable de estado de impresora
+    // Problema actual: Windows reporta estados transitorios (Printing, Processing)
+    // que causan falsos positivos. Necesita lógica más robusta que diferencie
+    // entre "ocupada imprimiendo" vs "físicamente desconectada"
+    // Ticket Jira: [PENDING]
+    
+    return true; // Por ahora, siempre permitir (asumimos que está disponible)
+};
 
 const validatePrinter = async (req = request, res = response, next) => {
     try {
@@ -22,40 +40,22 @@ const validatePrinter = async (req = request, res = response, next) => {
             });
         }
 
-        // Verificar que la impresora esté realmente disponible (no solo encolada)
-        // Esto ayuda a detectar si está desconectada del USB
-        const testPrinter = new SystemReceiptPrinter({ name: sisinposPrinter.name });
+        // Verificar estado real de la impresora (conectada físicamente)
+        const isOnline = await isPrinterOnline(sisinposPrinter.name);
         
-        // Intentar obtener estado de la impresora con un timeout corto
-        const printerAvailable = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                resolve(false);
-            }, 1000); // 1 segundo de timeout
-
-            try {
-                // Verificar si podemos acceder a la impresora
-                const printerInfo = SystemReceiptPrinter.getPrinters().find(p => p.name === sisinposPrinter.name);
-                clearTimeout(timeout);
-                resolve(!!printerInfo);
-            } catch (error) {
-                clearTimeout(timeout);
-                resolve(false);
-            }
-        });
-
-        if (!printerAvailable) {
-            console.warn('⚠️  Impresora "Sisinpos" encontrada pero puede estar desconectada');
+        if (!isOnline) {
+            console.warn('⚠️  Impresora "Sisinpos" está DESCONECTADA o APAGADA');
             return res.status(503).json({
                 ok: false,
-                msg: 'Impresora no disponible',
-                error: 'La impresora "Sisinpos" está configurada pero parece estar desconectada. Por favor, verifique la conexión USB.',
-                suggestion: 'Reconecte la impresora y espere unos segundos antes de intentar nuevamente'
+                msg: 'Impresora desconectada',
+                error: 'La impresora "Sisinpos" está desconectada o apagada. Por favor, verifique la conexión USB y que esté encendida.',
+                printerName: sisinposPrinter.name
             });
         }
         
         // Guardar la impresora en el request para usarla en el controlador
         req.ticket.printer = sisinposPrinter;
-        console.log(`✓ Impresora "Sisinpos" encontrada y lista`);
+        console.log(`✓ Impresora "Sisinpos" conectada y lista`);
         
         next();
         

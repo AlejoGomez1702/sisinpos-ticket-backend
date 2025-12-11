@@ -18,22 +18,20 @@ const printTicket = async( req = request, res = response ) => {
 
         // [2] Esperar turno y ejecutar impresión de forma secuencial
         await (printLock = printLock.then(async () => {
-            try {
-                // [2.1] Inicializar impresora
-                const receiptPrinter = new SystemReceiptPrinter({ name: printer.name });
+            // [2.1] Inicializar impresora
+            const receiptPrinter = new SystemReceiptPrinter({ name: printer.name });
 
-                // [2.2] Imprimir ticket
-                await sendToPrinter(receiptPrinter, data);
+            // [2.2] Imprimir ticket
+            await sendToPrinter(receiptPrinter, data);
 
-                // [2.3] Limpiar cola en background (sin await) para prevenir acumulación futura
-                clearPrintQueue(printer.name).catch(err => 
-                    console.warn('Error limpiando cola:', err.message)
-                );
-            } catch (error) {
-                console.error('Error en proceso de impresión:', error.message);
-                throw error;
-            }
-        }).catch(() => {})); // Ignorar errores de trabajos previos
+            // [2.3] Limpiar cola en background (sin await) para prevenir acumulación futura
+            clearPrintQueue(printer.name).catch(err => 
+                console.warn('Error limpiando cola:', err.message)
+            );
+        }).catch((error) => {
+            console.error('Error en semáforo de impresión:', error.message);
+            throw error; // Re-lanzar para que el catch externo lo capture
+        }));
 
         return res.json({
             ok: true,
