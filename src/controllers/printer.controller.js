@@ -1,213 +1,28 @@
-const ReceiptPrinterEncoder = require('@point-of-sale/receipt-printer-encoder');
 const SystemReceiptPrinter = require('@point-of-sale/system-receipt-printer');
-const { createCanvas, loadImage } = require('canvas');
 const { request, response } = require('express');
-const path = require('path');
+const { sendToPrinter } = require('../helpers/printer.helper');
+const { buildTicket } = require('../helpers/ticket-builder.helper');
 
 const printTicket = async( req = request, res = response ) => {
 
-    const { printer, establishment } = req.ticket;
+    const { printer } = req.ticket;
 
     try {
+        // [1] Inicializar impresora
         const receiptPrinter = new SystemReceiptPrinter({ name: printer.name });
 
-        const imagePath = path.join(__dirname, '..', '..', 'assets', 'images', 'sultan-icon.png');
-        const image = await loadImage(imagePath);
-        const imageWidth = 30*8;
-        const imageHeight = 25*8;
-
-        const encoder = new ReceiptPrinterEncoder({
-            language: 'esc-pos',
-            columns: 48,
-            feedBeforeCut: 4,
-            createCanvas: createCanvas
-        });
-
-        let ticketEncoder = encoder
-            .initialize()
-            .codepage('auto')
-
-            // [1] Imagen
-            .align('center')
-            // .image(image, imageWidth, imageHeight)
-
-            // [2] Información del negocio
-            .font('A')
-            .bold(true)
-            .size(2, 2)
-            .line(establishment.name)
-            .size(1, 1)
-            .bold(false)
-            // Info Obligatoria del negocio
-            .line(`NIT: ${establishment.nit}`)
-            // Información adicional Recomendada
-            .line(`CEL/WhatsApp: ${establishment.phone}`);        
-            // Solo agregar email si existe
-            if (establishment.email) {
-                ticketEncoder = ticketEncoder.line(establishment.email);
-            }            
-            ticketEncoder = ticketEncoder
-            .line(establishment.address)
-            .align('left')
-            .rule()
-
-            // [3] Fecha, Usuario, Artículos entregados y observaciones
-            .line(`${req.ticket.metadata.date} - ${req.ticket.metadata.time}`)
-            .line(`Atendido por: ${req.ticket.metadata.waiter}`)
-            .line(`Artículos entregados: ${req.ticket.metadata.totalArticles}`);
-        
-        if (req.ticket.metadata.observations) {
-            ticketEncoder = ticketEncoder.line(`Observaciones: ${req.ticket.metadata.observations}`);
-        }        
-        ticketEncoder = ticketEncoder
-            .newline()
-
-            // [4] Listado de productos
-            .align('left')
-            .table(
-                [
-                    { width: 22, align: 'left' },
-                    { width: 3,  align: 'center' },
-                    { width: 11,  align: 'right' },
-                    { width: 12,  align: 'right' }
-                ],
-                [
-                    [
-                        (encoder) => encoder.bold(true).text('Producto').bold(false),
-                        (encoder) => encoder.bold(true).text('CT').bold(false),
-                        (encoder) => encoder.bold(true).text('Unit').bold(false),
-                        (encoder) => encoder.bold(true).text('Total').bold(false)
-                    ],
-                    [
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule(),
-                        (encoder) => encoder.rule()
-                    ]
-                ]
-            );
-
-        // Renderizar cada producto
-        req.ticket.products.forEach(product => {
-            // Formatear valores
-            const quantity = `x${product.quantity}`;
-            const unitPrice = `$${product.unitPrice.toLocaleString('es-CO')}`;
-            const total = `$${product.total.toLocaleString('es-CO')}`;
-
-            // Tabla con información del producto
-            ticketEncoder = ticketEncoder
-                .table(
-                    [
-                        { width: 22, align: 'left' },
-                        { width: 3,  align: 'center' },
-                        { width: 11,  align: 'right' },
-                        { width: 12,  align: 'right' }
-                    ],
-                    [
-                        [ product.name, quantity, unitPrice, total ]
-                    ]
-                );
-
-            // Solo mostrar nota si existe
-            if (product.note) {
-                ticketEncoder = ticketEncoder
-                    .font('B')
-                    .line(`> ${product.note}`)
-                    .font('A');
-            }
-
-            ticketEncoder = ticketEncoder.newline();
-        });
-
-        // [5] Total de la venta
-        const formattedTotal = `$${req.ticket.total.toLocaleString('es-CO')}`;
-        
-        ticketEncoder = ticketEncoder
-            .rule()
-            .align('right')
-            .bold(true)
-            .size(2, 2)
-            .line(`TOTAL: ${formattedTotal}`)
-            .size(1, 1)
-            .bold(false)
-            .newline()
-            
-            // [6] Mensaje de agradecimiento
-            .align('center')
-            .size(1, 2)
-            .line('¡Gracias por su compra!')
-            .size(1, 1)
-            .newline()
-            // .barcode('3130ds3', 'code128')
-            .qrcode('https://drive.google.com/file/d/1eYZ00-DQhBOzc60ecx4m5XN7uR7IMRY2/view?usp=sharing')
-            .newline()
-            
-            // [7] Crédito del desarrollador
-            .align('center')
-            .font('A')
-            .bold(true)
-            .line('Desarrollado por: sisinpos.com')
-            .bold(false)
-            .cut()
-            .encode();
-
-        const data = ticketEncoder;
+        // [2] Construir ticket
+        const data = buildTicket(req.ticket);
 
         console.log(`📄 Datos generados: ${data.length} bytes`);
 
-        // 5. Imprimir directamente (SystemReceiptPrinter maneja la conexión internamente)
-        console.log('🖨️  Enviando a imprimir...');
-        
-        await new Promise((resolve, reject) => {
-            let resolved = false;
-
-            // Listener para cuando termine de imprimir
-            const handlePrinted = () => {
-                if (!resolved) {
-                    console.log('✓ Impresión completada');
-                    resolved = true;
-                    resolve({ success: true });
-                }
-            };
-
-            // Listener para errores
-            const handleError = (error) => {
-                if (!resolved) {
-                    console.error('✗ Error durante impresión:', error);
-                    resolved = true;
-                    reject(new Error(`Error de impresora: ${error.message || error}`));
-                }
-            };
-
-            // Registrar listeners
-            receiptPrinter.addEventListener('printed', handlePrinted);
-            receiptPrinter.addEventListener('error', handleError);
-
-            // Intentar imprimir inmediatamente
-            try {
-                receiptPrinter.print(data);
-                console.log('✓ Comando de impresión enviado');
-                
-                // Si no hay evento 'printed', resolver después de un delay
-                setTimeout(() => {
-                    if (!resolved) {
-                        console.log('⚠️  No se recibió confirmación, asumiendo éxito');
-                        resolved = true;
-                        resolve({ success: true, assumed: true });
-                    }
-                }, 2000);
-                
-            } catch (printError) {
-                console.error('✗ Error al enviar comando:', printError);
-                resolved = true;
-                reject(printError);
-            }
-        });
+        // [8] Imprimir ticket
+        await sendToPrinter(receiptPrinter, data);
 
         return res.json({
             ok: true,
             msg: 'Ticket impreso correctamente',
-            printer: defaultPrinter.name,
+            printer: printer.name,
             bytes: data.length
         });
 
