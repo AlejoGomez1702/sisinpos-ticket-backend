@@ -3,8 +3,8 @@ const { check } = require('express-validator');
 const { validatePrinter } = require('../middlewares/validate-printer');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateTicketData } = require('../middlewares/validate-ticket-data');
-const { printTicket } = require('../controllers/printer.controller');
-
+const { printTicket, printKitchenTicket } = require('../controllers/printer.controller');
+const { validateKitchenTicketData } = require('../middlewares/validate-kitchen-ticket-data');
 
 const router = Router();
 
@@ -17,11 +17,23 @@ router.post('/print-ticket', [
   check('establishment_address').optional().trim().isString().isLength({ max: 60 }),
   check('waiter_name').trim().isString().not().isEmpty().isLength({ max: 50 }),
   check('sale_data', 'Los datos de la venta son obligatorios').exists(),
-  check('sale_data.products', 'La lista de productos es obligatoria').isArray({ min: 1 }),
+  check('sale_data.products', 'La lista de productos es obligatoria').exists().isArray({ min: 1 }),
   check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),
   validateFields,
   validateTicketData
 ], printTicket);
 
+router.post('/print-kitchen-ticket', [
+  validatePrinter,
+  check('order_data', 'Los datos de la orden son obligatorios').exists(),
+  check('order_data.order_type', 'El tipo de orden es obligatorio').exists().isIn(['TABLE', 'DELIVERY', 'FAST']),
+  check('order_data.table_name').optional().isString().isLength({ max: 30 }),
+  check('order_data.customer_name').optional().isString().isLength({ max: 50 }),
+  check('sale_data', 'Los datos de la venta son obligatorios').exists(),
+  check('sale_data.products', 'La lista de productos es obligatoria').exists().isArray({ min: 1 }),
+  check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),
+  validateFields,
+  validateKitchenTicketData
+], printKitchenTicket);
 
 module.exports = router;

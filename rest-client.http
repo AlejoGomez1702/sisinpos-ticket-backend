@@ -1,0 +1,67 @@
+### Print ticket
+POST http://localhost:3000/api/printer/print-ticket
+Content-Type: application/json
+
+{
+  "establishment_name": "El Sultán",
+  "establishment_nit": "123.456.789-0",
+  "establishment_phone": "3217816922",
+  "establishment_email": "estoesunemail@gmail.com",
+  "establishment_address": "Cali, Valle del Cauca",
+  "waiter_name": "Luis Alejandro Gómez",
+  "sale_data": {
+    "products": [
+      {
+        "product": "6893787ad6915a68c51bd6fb",
+        "product_name": "Perro Ranchero",
+        "product_note": "Perro con nota 1",
+        "count": 2,
+        "purchase_price": 1000,
+        "sale_price": 15000,
+        "second_sale_price": 15000,
+        "is_second_price": false,
+        "count_second_price": 0,
+        "total_item_value": 30000,
+        "_id": "6935e8726f44887766687d3b"
+      },
+      {
+        "product": "6893ae5dd6915a68c51bd860",
+        "product_name": "Sandwich De Pollo",
+        "product_note": "Perro con nota 2",
+        "count": 1,
+        "purchase_price": 1000,
+        "sale_price": 8500,
+        "second_sale_price": 8500,
+        "is_second_price": false,
+        "count_second_price": 0,
+        "total_item_value": 8500,
+        "_id": "6935e8726f44887766687d3c"
+      }
+    ],
+    "notes": "Nota general para la venta",
+    "total": 38500,
+    "total_inversion": 3000,
+    "state": true,
+    "user": {
+      "_id": "6892416fd6915a68c51bb06e",
+      "name": "Luis Daniel Jaramillo"
+    },
+    "trusted_payments": [],
+    "sale_made_from": "WEB",
+    "establishment": {
+      "_id": "68924196d6915a68c51bb072",
+      "name": "El Sultán"
+    },
+    "created_at": "2025-12-07T15:49:54.766Z",
+    "updated_at": "2025-12-07T15:49:54.766Z",
+    "id": "6935e8726f44887766687d3a"
+  }
+}
+
+
+### Print ticket
+POST http://localhost:3000/api/printer/print-kitchen-ticket
+Content-Type: application/json
+
+{
+}

@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const config = require('./config');
-const { loadRoutes } = require('./routes');
 
 class Server {
     constructor() {
@@ -24,7 +23,7 @@ class Server {
     }
 
     startRoutes() {
-        loadRoutes( this.app );
+        this.app.use('/api/printer', require('../routes/printer.routes'));
     }
 
     listen() {
