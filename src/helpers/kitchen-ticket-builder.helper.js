@@ -60,7 +60,7 @@ const buildKitchenProductsSection = (encoder, products) => {
         ticketEncoder = ticketEncoder
             .bold(true)
             .size(2, 3)
-            .line(`${product.quantity}x ${product.name}`)
+            .line(`x${product.quantity} ${product.name}`)
             .size(2, 2)
             .bold(false);
 
