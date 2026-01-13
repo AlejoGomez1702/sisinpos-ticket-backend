@@ -19,6 +19,7 @@ router.post('/print-ticket', [
   check('sale_data', 'Los datos de la venta son obligatorios').exists(),
   check('sale_data.products', 'La lista de productos es obligatoria').exists().isArray({ min: 1 }),
   check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),
+  check('sale_data.delivery_cost').optional().isNumeric().withMessage('El costo de domicilio debe ser un número'),
   validateFields,
   validateTicketData
 ], printTicket);
@@ -29,6 +30,7 @@ router.post('/print-kitchen-ticket', [
   check('order_data.order_type', 'El tipo de orden es obligatorio').exists().isIn(['TABLE', 'DELIVERY', 'FAST']),
   check('order_data.table_name').optional().isString().isLength({ max: 30 }),
   check('order_data.customer_name').optional().isString().isLength({ max: 50 }),
+  check('order_data.delivery_cost').optional().isNumeric().withMessage('El costo de domicilio debe ser un número'),
   check('sale_data', 'Los datos de la venta son obligatorios').exists(),
   check('sale_data.products', 'La lista de productos es obligatoria').exists().isArray({ min: 1 }),
   check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),

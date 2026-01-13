@@ -7,7 +7,8 @@ const validateKitchenTicketData = (req, res, next) => {
         ...req.ticket, // Mantener el printer que viene de validatePrinter
         orderType: order_data.order_type,
         tableName: order_data.table_name || null,
-        customerName: order_data.customer_name || null
+        customerName: order_data.customer_name || null,
+        deliveryCost: order_data.delivery_cost || null
     };
 
     // [2] Productos de la orden

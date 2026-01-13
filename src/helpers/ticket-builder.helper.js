@@ -39,8 +39,14 @@ const buildMetadataSection = (encoder, metadata) => {
         .align('left')
         .rule()
         .line(`${metadata.date} - ${metadata.time}`)
-        .line(`Atendido por: ${metadata.waiter}`)
-        .line(`Artículos entregados: ${metadata.totalArticles}`);
+        .line(`Atendido por: ${metadata.waiter}`);
+    
+    // Solo mostrar cliente si existe
+    if (metadata.clientName) {
+        ticketEncoder = ticketEncoder.line(`Cliente: ${metadata.clientName}`);
+    }
+    
+    ticketEncoder = ticketEncoder.line(`Artículos entregados: ${metadata.totalArticles}`);
     
     // Solo mostrar observaciones si existen
     if (metadata.observations) {
@@ -129,20 +135,32 @@ const buildProductsSection = (encoder, products) => {
  * Construye la sección del total
  * @param {Object} encoder - Instancia del encoder
  * @param {Number} total - Total de la venta
+ * @param {Number} deliveryCost - Costo de domicilio (opcional)
  * @returns {Object} encoder actualizado
  */
-const buildTotalSection = (encoder, total) => {
+const buildTotalSection = (encoder, total, deliveryCost = null) => {
     const formattedTotal = `$${total.toLocaleString('es-CO')}`;
     
-    return encoder
+    let ticketEncoder = encoder
         .rule()
-        .align('right')
+        .align('right');
+    
+    // Mostrar costo de domicilio si existe (antes del total)
+    if (deliveryCost) {
+        const formattedDeliveryCost = `$${deliveryCost.toLocaleString('es-CO')}`;
+        ticketEncoder = ticketEncoder
+            .line(`Costo Domicilio: ${formattedDeliveryCost}`)
+            .newline();
+    }
+    
+    ticketEncoder = ticketEncoder
         .bold(true)
         .size(2, 2)
         .line(`TOTAL: ${formattedTotal}`)
         .size(1, 1)
-        .bold(false)
-        .newline();
+        .bold(false);
+    
+    return ticketEncoder.newline();
 };
 
 /**
@@ -201,7 +219,7 @@ const buildTicket = (ticketData) => {
     ticketEncoder = buildProductsSection(ticketEncoder, ticketData.products);
 
     // [6] Total
-    ticketEncoder = buildTotalSection(ticketEncoder, ticketData.total);
+    ticketEncoder = buildTotalSection(ticketEncoder, ticketData.total, ticketData.deliveryCost);
 
     // [7] Footer (agradecimiento y créditos)
     ticketEncoder = buildFooterSection(ticketEncoder);

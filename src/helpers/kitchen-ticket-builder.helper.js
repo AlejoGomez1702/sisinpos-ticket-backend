@@ -95,8 +95,15 @@ const buildKitchenFooterSection = (encoder, products, ticketData) => {
         .align('center')
         .bold(true)
         .size(1, 2)
-        .line(`Total Artículos: ${totalArticles}`)
-        .bold(false);
+        .line(`Total Artículos: ${totalArticles}`);
+    
+    // Mostrar costo de delivery si existe
+    if (ticketData.deliveryCost) {
+        const formattedDeliveryCost = `$${ticketData.deliveryCost.toLocaleString('es-CO')}`;
+        ticketEncoder = ticketEncoder.line(`Costo Domicilio: ${formattedDeliveryCost}`);
+    }
+    
+    ticketEncoder = ticketEncoder.bold(false);
     
     // Solo mostrar observaciones generales si existen
     if (ticketData.notes) {

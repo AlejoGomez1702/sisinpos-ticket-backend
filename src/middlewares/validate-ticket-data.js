@@ -42,11 +42,15 @@ const validateTicketData = ( req, res, next ) => {
         time: time,
         waiter: waiter_name || null,
         observations: sale_data.notes || null,
-        totalArticles: totalArticles
+        totalArticles: totalArticles,
+        clientName: sale_data.client?.name || null
     };
 
     // [4] Total de la venta
     req.ticket.total = sale_data.total;
+
+    // [5] Costo de domicilio (opcional)
+    req.ticket.deliveryCost = sale_data.delivery_cost || null;
 
     next();
 };
