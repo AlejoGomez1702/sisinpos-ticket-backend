@@ -11,11 +11,13 @@ const validateKitchenTicketData = (req, res, next) => {
         deliveryCost: order_data.delivery_cost || null
     };
 
+    console.log('products', sale_data.products);
+
     // [2] Productos de la orden
     req.ticket.products = sale_data.products.map(product => ({
         name: product.product_name,
         quantity: product.count,
-        note: product.product_note || null
+        note: product.note || null
     }));
 
     // [3] Notas generales
