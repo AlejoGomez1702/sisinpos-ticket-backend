@@ -5,6 +5,7 @@ const { validateFields } = require('../middlewares/validate-fields');
 const { validateTicketData } = require('../middlewares/validate-ticket-data');
 const { printTicket, printKitchenTicket } = require('../controllers/printer.controller');
 const { validateKitchenTicketData } = require('../middlewares/validate-kitchen-ticket-data');
+const { hasProductsOrBilliardSale } = require('../helpers/sale-validation.helper');
 
 const router = Router();
 
@@ -17,7 +18,8 @@ router.post('/print-ticket', [
   check('establishment_address').optional().trim().isString().isLength({ max: 60 }),
   check('waiter_name').trim().isString().not().isEmpty().isLength({ max: 50 }),
   check('sale_data', 'Los datos de la venta son obligatorios').exists(),
-  check('sale_data.products', 'La lista de productos es obligatoria').exists().isArray({ min: 1 }),
+  check('sale_data.products', 'La lista de productos debe ser un arreglo').optional().isArray(),
+  check('sale_data', 'La venta debe tener productos o una venta de tiempo (billar)').custom(hasProductsOrBilliardSale),
   check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),
   check('sale_data.delivery_cost').optional().isNumeric().withMessage('El costo de domicilio debe ser un número'),
   check('sale_data.billiard_sale').optional().isObject(),

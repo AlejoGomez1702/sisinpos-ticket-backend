@@ -46,7 +46,10 @@ const buildMetadataSection = (encoder, metadata) => {
         ticketEncoder = ticketEncoder.line(`Cliente: ${metadata.clientName}`);
     }
     
-    ticketEncoder = ticketEncoder.line(`Artículos entregados: ${metadata.totalArticles}`);
+    // Solo mostrar artículos entregados si hay productos
+    if (metadata.totalArticles > 0) {
+        ticketEncoder = ticketEncoder.line(`Artículos entregados: ${metadata.totalArticles}`);
+    }
     
     // Solo mostrar observaciones si existen
     if (metadata.observations) {
@@ -231,24 +234,24 @@ const buildTicket = (ticketData) => {
     // [3] Metadatos (fecha, usuario, artículos)
     ticketEncoder = buildMetadataSection(ticketEncoder, ticketData.metadata);
 
-    // [4] Encabezado de tabla de productos
-    ticketEncoder = buildProductsTableHeader(ticketEncoder);
+    // [4] Productos (opcional, puede ser una venta de solo tiempo)
+    if (ticketData.products.length > 0) {
+        ticketEncoder = buildProductsTableHeader(ticketEncoder);
+        ticketEncoder = buildProductsSection(ticketEncoder, ticketData.products);
+    }
 
-    // [5] Lista de productos
-    ticketEncoder = buildProductsSection(ticketEncoder, ticketData.products);
-
-    // [6] Venta de mesa de billar (opcional)
+    // [5] Venta de mesa de billar (opcional)
     if (ticketData.billiard) {
         ticketEncoder = buildBilliardSection(ticketEncoder, ticketData.billiard);
     }
 
-    // [7] Total
+    // [6] Total
     ticketEncoder = buildTotalSection(ticketEncoder, ticketData.total, ticketData.deliveryCost);
 
-    // [8] Footer (agradecimiento y créditos)
+    // [7] Footer (agradecimiento y créditos)
     ticketEncoder = buildFooterSection(ticketEncoder);
 
-    // [9] Finalizar y codificar
+    // [8] Finalizar y codificar
     return ticketEncoder.cut().encode();
 };
 

@@ -25,8 +25,9 @@ const validateTicketData = ( req, res, next ) => {
     const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
     
-    // [3] Productos de la venta
-    req.ticket.products = sale_data.products.map(product => ({
+    // [3] Productos de la venta (opcional, puede ser una venta de solo tiempo)
+    const products = sale_data.products || [];
+    req.ticket.products = products.map(product => ({
         name: product.product_name,
         quantity: product.count,
         unitPrice: product.sale_price,
@@ -35,7 +36,7 @@ const validateTicketData = ( req, res, next ) => {
     }));
 
     // Calcular total de artículos entregados
-    const totalArticles = sale_data.products.reduce((sum, product) => sum + product.count, 0);
+    const totalArticles = products.reduce((sum, product) => sum + product.count, 0);
     
     req.ticket.metadata = {
         date: date,
