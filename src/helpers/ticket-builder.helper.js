@@ -197,12 +197,10 @@ const buildFooterSection = (encoder) => {
         .line('¡Gracias por su compra!')
         .size(1, 1)
         .newline()
-        .qrcode('https://drive.google.com/file/d/1eYZ00-DQhBOzc60ecx4m5XN7uR7IMRY2/view?usp=sharing', { size: 4 })
-        .newline()
         .align('center')
         .font('A')
         .bold(true)
-        .line('Desarrollado por: sisinpos.com')
+        .line('Desarrollado por: Pensil Devs | sisinpos.com')
         .bold(false);
 };
 
@@ -221,7 +219,13 @@ const buildTicket = (ticketData) => {
 
     let ticketEncoder = encoder
         .initialize()
-        .codepage('auto');
+        .codepage('auto')
+        // Fuerza el envío de initialize()/codepage() antes de imprimir cualquier
+        // línea. Sin esto, esos comandos quedan pendientes junto con el primer
+        // .align('center'), y al llegar ESC@ a la impresora esta limpia su buffer
+        // y descarta el padding de centrado, dejando el nombre del establecimiento
+        // pegado a la izquierda.
+        .newline();
 
     // [1] Imagen (comentada por ahora)
     // const imagePath = path.join(__dirname, '..', '..', 'assets', 'images', 'sultan-icon.png');
