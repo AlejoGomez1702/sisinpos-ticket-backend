@@ -132,6 +132,25 @@ const buildProductsSection = (encoder, products) => {
 };
 
 /**
+ * Construye la sección de la venta de mesa de billar (opcional)
+ * @param {Object} encoder - Instancia del encoder
+ * @param {Object} billiard - Datos de la venta de mesa
+ * @returns {Object} encoder actualizado
+ */
+const buildBilliardSection = (encoder, billiard) => {
+    const formattedCost = `$${billiard.cost.toLocaleString('es-CO')}`;
+
+    return encoder
+        .align('left')
+        .rule()
+        .line(`Mesa: ${billiard.tableName}`)
+        .line(`Tiempo: ${billiard.elapsedMinutes} min ($${billiard.hourlyRate.toLocaleString('es-CO')}/h)`)
+        .align('right')
+        .line(`Subtotal mesa: ${formattedCost}`)
+        .newline();
+};
+
+/**
  * Construye la sección del total
  * @param {Object} encoder - Instancia del encoder
  * @param {Number} total - Total de la venta
@@ -218,13 +237,18 @@ const buildTicket = (ticketData) => {
     // [5] Lista de productos
     ticketEncoder = buildProductsSection(ticketEncoder, ticketData.products);
 
-    // [6] Total
+    // [6] Venta de mesa de billar (opcional)
+    if (ticketData.billiard) {
+        ticketEncoder = buildBilliardSection(ticketEncoder, ticketData.billiard);
+    }
+
+    // [7] Total
     ticketEncoder = buildTotalSection(ticketEncoder, ticketData.total, ticketData.deliveryCost);
 
-    // [7] Footer (agradecimiento y créditos)
+    // [8] Footer (agradecimiento y créditos)
     ticketEncoder = buildFooterSection(ticketEncoder);
 
-    // [8] Finalizar y codificar
+    // [9] Finalizar y codificar
     return ticketEncoder.cut().encode();
 };
 
@@ -234,6 +258,7 @@ module.exports = {
     buildMetadataSection,
     buildProductsTableHeader,
     buildProductsSection,
+    buildBilliardSection,
     buildTotalSection,
     buildFooterSection
 };

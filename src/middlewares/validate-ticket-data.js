@@ -52,6 +52,15 @@ const validateTicketData = ( req, res, next ) => {
     // [5] Costo de domicilio (opcional)
     req.ticket.deliveryCost = sale_data.delivery_cost || null;
 
+    // [6] Venta de mesa de billar (opcional)
+    const { billiard_sale } = sale_data;
+    req.ticket.billiard = billiard_sale ? {
+        tableName: billiard_sale.table_name,
+        elapsedMinutes: billiard_sale.elapsed_minutes,
+        hourlyRate: billiard_sale.hourly_rate,
+        cost: billiard_sale.hourly_rate * billiard_sale.elapsed_minutes / 60
+    } : null;
+
     next();
 };
 

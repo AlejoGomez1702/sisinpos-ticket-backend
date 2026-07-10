@@ -20,6 +20,10 @@ router.post('/print-ticket', [
   check('sale_data.products', 'La lista de productos es obligatoria').exists().isArray({ min: 1 }),
   check('sale_data.notes').optional().trim().isString().isLength({ max: 200 }),
   check('sale_data.delivery_cost').optional().isNumeric().withMessage('El costo de domicilio debe ser un número'),
+  check('sale_data.billiard_sale').optional().isObject(),
+  check('sale_data.billiard_sale.table_name', 'El nombre de la mesa es obligatorio').if(check('sale_data.billiard_sale').exists()).trim().isString().not().isEmpty().isLength({ max: 30 }),
+  check('sale_data.billiard_sale.elapsed_minutes', 'Los minutos transcurridos deben ser un número').if(check('sale_data.billiard_sale').exists()).isNumeric(),
+  check('sale_data.billiard_sale.hourly_rate', 'La tarifa por hora debe ser un número').if(check('sale_data.billiard_sale').exists()).isNumeric(),
   validateFields,
   validateTicketData
 ], printTicket);
