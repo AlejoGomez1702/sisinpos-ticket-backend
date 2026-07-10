@@ -45,17 +45,7 @@ const buildMetadataSection = (encoder, metadata) => {
     if (metadata.clientName) {
         ticketEncoder = ticketEncoder.line(`Cliente: ${metadata.clientName}`);
     }
-    
-    // Solo mostrar artículos entregados si hay productos
-    if (metadata.totalArticles > 0) {
-        ticketEncoder = ticketEncoder.line(`Artículos entregados: ${metadata.totalArticles}`);
-    }
-    
-    // Solo mostrar observaciones si existen
-    if (metadata.observations) {
-        ticketEncoder = ticketEncoder.line(`Observaciones: ${metadata.observations}`);
-    }
-    
+
     return ticketEncoder.newline();
 };
 
